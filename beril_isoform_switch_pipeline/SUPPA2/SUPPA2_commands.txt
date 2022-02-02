@@ -1,0 +1,24 @@
+
+
+# We first generate events for each sample. Note that the following is the example command for sample 42MGBA_1. The analysis should be repeated for all samples:
+
+python PATH_TO_SUPPA2_DIRECTORY/suppa.py generateEvents -i 42MGBA_1_mix.gtf -o 42MGBA_1.events -e SE SS MX RI FL -f ioe
+
+#Put all the ioe events in the same file:
+
+>>awk '
+    FNR==1 && NR!=1 { while (/^<header>/) getline; }
+    1 {print}
+' *.ioe > all_.events.ioe
+
+
+# We then compute psi values per event with the following:
+
+python PATH_TO_SUPPA2_DIRECTORY/suppa.py psiPerEvent -i all_.events.ioe -e t_data_modified.ctab -o 42MGBA_1_events
+
+# Finally, we can run the analysis of the differential transcript usage. The .exp files are modified quantification files output by StringTie. Both the raw output from StringTie and the modified versions to fit necessary file format for SUPPA2 are included in this repository. Note that the following is the example command for comparing cell lines 42MGBA and 42MGBA_TMZres. The analysis should be repeated between all 3 cell lines:
+
+python PATH_TO_SUPPA2_DIRECTORY/suppa.py diffSplice -m empirical -gc -i all_events.ioe -p 42MGBA_events.psi 42MGBA_TMZres_events.psi -e 42MGBA.exp 42MGBA_TMZres.exp  -o 42MGBA_vs_42MGBA_TMZres
+
+For a more detailed explanation of the pipeline please see the manual here: https://github.com/comprna/SUPPA
+and a tutorial example here: https://github.com/comprna/SUPPA/wiki/SUPPA2-tutorial
